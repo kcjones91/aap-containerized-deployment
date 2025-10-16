@@ -52,11 +52,6 @@ registry_password='redhat password here'
 You can start from the **full example** below (also available as `vars.example.yml`). **Change the passwords/hosts** before use.
 
 ```yaml
-# --- Registry (pull AAP images) ---
-aap_registry_url: "{{ registry_url }}"
-aap_registry_username: "{{ registry_username }}"
-aap_registry_password: "{{ registry_password }}"
-
 # --- Controller ---
 controller_admin_password: "cora0410"  # CHANGE ME
 controller_pg_host: "{{ groups['database'][0] }}"
@@ -85,17 +80,6 @@ postgresql_admin_password: "pgadminpassword"    # CHANGE ME
 # --- Redis ---
 redis_mode: "standalone"              # single-node demo; adjust for HA
 ```
-
-> Encrypt if storing secrets locally:
-> ```bash
-> ansible-vault encrypt vars.yml
-> ```
->
-> **Tip (CI/CD):** Instead of committing secrets, map them from environment variables:
-> ```yaml
-> aap_registry_username: "{{ lookup('env', 'RH_REG_USER') }}"
-> aap_registry_password: "{{ lookup('env', 'RH_REG_PASS') }}"
-> ```
 
 ### 3) Install
 
