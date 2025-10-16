@@ -1,0 +1,28 @@
+---
+# Controller
+controller_admin_password: "password"
+controller_pg_host: "{{ groups['database'][0] }}"
+controller_pg_password: "password"
+
+# Gateway
+gateway_admin_password: "password"
+gateway_pg_host: "{{ groups['database'][0] }}"
+gateway_pg_password: "password"
+
+#gateway_tls_cert: "/home/swipe/aap/certs/gateway.crt"
+#gateway_tls_key:  "/home/swipe/aap/certs/gateway.key"
+custom_ca_cert:   "add cert path"
+gateway_main_url: "https://<hostip>:8446"
+
+hub_admin_password: "password"
+hub_pg_host: "127.0.0.1"
+hub_pg_password: "password"
+
+
+# Installer-managed Postgres admin (to create component DBs)
+postgresql_admin_username: "postgres"
+postgresql_admin_password: "password"
+
+# Single-node Redis
+redis_mode: "standalone"
+

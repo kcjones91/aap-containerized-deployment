@@ -1,0 +1,77 @@
+---
+- name: Create the automation controller rsyslog container
+  containers.podman.podman_container:
+    name: automation-controller-rsyslog
+    image: '{{ _controller_image }}'
+    command: '{{ __rsyslog_cmd }}'
+    generate_systemd:
+      container_prefix: ''
+      path: '{{ ansible_user_dir }}/.config/systemd/user'
+      separator: ''
+      requires: '{{ __systemd_requires }}'
+      restart_policy: always
+    log_driver: '{{ container_log_driver }}'
+    user: '{{ ansible_user_uid }}'
+    userns: keep-id
+    network: host
+    secrets: '{{ _common_secrets }}'
+    volume: '{{ _rsyslog_volumes }}'
+    env: '{{ __rsyslog_env }}'
+    label:
+      '{{ _autoupdate_label }}'
+    state: created
+    recreate: '{{ __containers_recreate | default(false) }}'
+  notify: Restart controller rsyslog
+
+- name: Create the automation controller task container
+  containers.podman.podman_container:
+    name: automation-controller-task
+    image: '{{ _controller_image }}'
+    command: '{{ __task_cmd }}'
+    generate_systemd:
+      container_prefix: ''
+      path: '{{ ansible_user_dir }}/.config/systemd/user'
+      separator: ''
+      requires: '{{ __systemd_requires }}'
+      restart_policy: always
+    log_driver: '{{ container_log_driver }}'
+    user: '{{ ansible_user_uid }}'
+    userns: keep-id
+    network: host
+    secrets: '{{ _common_secrets }}'
+    volume: '{{ _task_volumes }}'
+    security_opt: ['label=disable']
+    env: '{{ __task_env }}'
+    label:
+      '{{ _autoupdate_label }}'
+    state: created
+    recreate: '{{ __containers_recreate | default(false) }}'
+  notify: Restart controller task
+
+- name: Create the automation controller web container
+  containers.podman.podman_container:
+    name: automation-controller-web
+    image: '{{ _controller_image }}'
+    command: '{{ __web_cmd }}'
+    generate_systemd:
+      container_prefix: ''
+      path: '{{ ansible_user_dir }}/.config/systemd/user'
+      separator: ''
+      requires: '{{ __systemd_requires }}'
+      restart_policy: always
+    log_driver: '{{ container_log_driver }}'
+    user: '{{ ansible_user_uid }}'
+    userns: keep-id
+    network: host
+    mount:
+      - 'type=tmpfs,destination=/run/nginx,U=true'
+    secrets: '{{ _common_secrets }}'
+    volume: '{{ _web_volumes }}'
+    stop_timeout: 30
+    env: '{{ __web_env }}'
+    label:
+      '{{ _autoupdate_label }}'
+    state: created
+    recreate: '{{ __containers_recreate | default(false) }}'
+  notify: Restart controller web
+...

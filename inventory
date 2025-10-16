@@ -1,0 +1,14 @@
+[automationcontroller]
+localhostnamehere ansible_connection=local
+
+[automationgateway]
+localhostnamehere
+
+[database]
+localhostnamehere
+
+[all:vars]
+# Container registry creds (use your RH account or a service account token)
+registry_url=registry.redhat.io
+registry_username='redhat developer account here'
+registry_password='redhat password here'

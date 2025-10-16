@@ -1,0 +1,10 @@
+---
+- name: Get podman version
+  ansible.builtin.command: podman version --format=json
+  changed_when: false
+  register: _podman_version
+
+- name: Set podman idempotence fact
+  ansible.builtin.set_fact:
+    _podman_idempotence: '{{ (_podman_version.stdout | from_json).Client.Version is version("4.7.0", ">=") }}'
+...

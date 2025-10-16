@@ -1,0 +1,29 @@
+---
+- name: Ensure automation gateway proxy is ready
+  ansible.builtin.uri:
+    url: '{{ _gateway_proxy_url }}'
+    validate_certs: true
+    ca_path: '{{ _ca_tls_dir }}/extracted/pem/tls-ca-bundle.pem'
+  register: _gateway_proxy_ready
+  until: _gateway_proxy_ready.status == 200
+  retries: 30
+  delay: 10
+
+- name: Merge controller organization
+  ansible.builtin.include_tasks: data_migration.yml
+  vars:
+    _component: controller
+  when: groups.get('automationcontroller', []) | length > 0
+
+- name: Merge eda organization
+  ansible.builtin.include_tasks: data_migration.yml
+  vars:
+    _component: eda
+  when: groups.get('automationeda', []) | length > 0
+
+- name: Merge hub organization
+  ansible.builtin.include_tasks: data_migration.yml
+  vars:
+    _component: galaxy
+  when: groups.get('automationhub', []) | length > 0
+...

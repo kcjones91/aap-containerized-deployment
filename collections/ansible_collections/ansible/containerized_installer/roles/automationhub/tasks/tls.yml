@@ -1,0 +1,69 @@
+---
+- name: Generate TLS certificate and key
+  when:
+    - hub_tls_cert is not defined
+    - hub_tls_key is not defined
+  block:
+    - name: Check the current hub private key
+      ansible.builtin.stat:
+        path: '{{ hub_conf_dir }}/pulp.key'
+      register: _hub_tls_key
+
+    - name: Generate a private key
+      community.crypto.openssl_privatekey:
+        path: '{{ hub_conf_dir }}/pulp.key'
+        mode: '0400'
+      when: not _hub_tls_key.stat.exists | bool
+
+    - name: Check the current hub certificate
+      ansible.builtin.stat:
+        path: '{{ hub_conf_dir }}/pulp.cert'
+      register: _hub_tls_cert
+
+    - name: Create the hub TLS certificate
+      when: not _hub_tls_cert.stat.exists | bool
+      block:
+        - name: Generate a certificate signing request
+          community.crypto.openssl_csr_pipe:
+            common_name: '{{ _hub_hostname }}'
+            country_name: 'US'
+            locality_name: 'Raleigh'
+            organization_name: 'Red Hat'
+            organizational_unit_name: 'Ansible'
+            state_or_province_name: 'North Carolina'
+            subject_alt_name: '{{ [_hub_hostname | ansible.containerized_installer.subject_alt_name] | union(_hub_ips) }}'
+            privatekey_path: '{{ hub_conf_dir }}/pulp.key'
+          register: _hub_tls_csr
+
+        - name: Generate a self signed x509 certificate
+          community.crypto.x509_certificate:
+            path: '{{ hub_conf_dir }}/pulp.cert'
+            csr_content: '{{ _hub_tls_csr.csr }}'
+            privatekey_path: '{{ hub_conf_dir }}/pulp.key'
+            provider: ownca
+            ownca_path: '{{ _ca_tls_dir }}/ca.cert'
+            ownca_privatekey_path: '{{ _ca_tls_dir }}/ca.key'
+            ownca_privatekey_passphrase: '{{ ca_tls_key_passphrase | default(omit) }}'
+            mode: '0640'
+
+- name: Import TLS certificate and key
+  when:
+    - hub_tls_cert is defined
+    - hub_tls_key is defined
+  block:
+    - name: Copy hub TLS certificate
+      ansible.builtin.copy:
+        src: '{{ hub_tls_cert }}'
+        dest: '{{ hub_conf_dir }}/pulp.cert'
+        mode: '0640'
+        remote_src: '{{ hub_tls_remote | default(false) }}'
+      notify: Restart hub web
+
+    - name: Copy hub TLS key
+      ansible.builtin.copy:
+        src: '{{ hub_tls_key }}'
+        dest: '{{ hub_conf_dir }}/pulp.key'
+        mode: '0400'
+        remote_src: '{{ hub_tls_remote | default(false) }}'
+      notify: Restart hub web
+...

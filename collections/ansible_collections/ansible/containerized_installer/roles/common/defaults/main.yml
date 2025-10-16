@@ -1,0 +1,48 @@
+---
+bundle_install: false
+
+### registry variables
+registry_auth: true
+registry_url: registry.redhat.io
+registry_tls_verify: true
+registry_ns_aap: ansible-automation-platform-25
+registry_ns_rhel: rhel8
+
+### database
+postgresql_version: 15
+
+### podman
+podman_packages:
+  - crun
+  - podman
+  - slirp4netns
+  - fuse-overlayfs
+podman_runtime: crun
+
+### redis
+redis_version: 6
+
+### container image variables
+container_compress: gzip
+container_keep_images: false
+container_pull_images: true
+controller_image: 'controller-rhel8:latest'
+de_supported_image: 'de-supported-rhel8:latest'
+de_extra_images: []
+eda_image: 'eda-controller-rhel8:latest'
+eda_web_image: 'eda-controller-ui-rhel8:latest'
+ee_minimal_image: 'ee-minimal-rhel8:latest'
+ee_supported_image: 'ee-supported-rhel8:latest'
+ee_extra_images: []
+hub_image: 'hub-rhel8:latest'
+hub_web_image: 'hub-web-rhel8:latest'
+postgresql_image: 'postgresql-{{ postgresql_version }}:latest'
+receptor_image: 'receptor-rhel8:latest'
+redis_image: 'redis-{{ redis_version }}:latest'
+gateway_image: 'gateway-rhel8:latest'
+gateway_proxy_image: 'gateway-proxy-rhel8:latest'
+pcp_image: 'pcp:latest'
+
+### TLS variables
+ca_tls_remote: false
+...

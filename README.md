@@ -152,3 +152,4 @@ vars.yml
 ## License
 
 MIT (or your preferred license).
+
