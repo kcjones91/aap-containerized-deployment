@@ -57,10 +57,6 @@ aap_registry_url: "{{ registry_url }}"
 aap_registry_username: "{{ registry_username }}"
 aap_registry_password: "{{ registry_password }}"
 
-# --- General ---
-aap_deployment_type: "standard"        # e.g., "standard", "controller-only"
-aap_namespace: "aap"                   # k8s namespace/project for AAP
-
 # --- Controller ---
 controller_admin_password: "cora0410"  # CHANGE ME
 controller_pg_host: "{{ groups['database'][0] }}"
