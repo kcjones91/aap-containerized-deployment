@@ -53,7 +53,7 @@ You can start from the **full example** below (also available as `vars.example.y
 
 ```yaml
 # --- Controller ---
-controller_admin_password: "cora0410"  # CHANGE ME
+controller_admin_password: "password"  # CHANGE ME
 controller_pg_host: "{{ groups['database'][0] }}"
 controller_pg_password: "pgpassword"   # CHANGE ME
 
