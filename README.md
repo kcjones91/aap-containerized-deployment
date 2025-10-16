@@ -12,7 +12,7 @@ This repo deploys AAP to the local/target host using Ansible playbooks that live
 - **Install:** `install.yml`
 - **Uninstall:** `uninstall.yml`
 
-> ⚠️ **Protect secrets**: do **not** commit real passwords/tokens. Prefer Ansible Vault or environment variables in CI.
+> ⚠️ **Protect secrets**: do **not** commit real passwords/tokens. Prefer **Ansible Vault** or **environment variables** (especially in CI).
 
 ---
 
@@ -47,20 +47,58 @@ registry_username='redhat developer account here'
 registry_password='redhat password here'
 ```
 
-### 2) Create `vars.yml` (minimal example)
+### 2) Create `vars.yml`
+
+You can start from the **full example** below (also available as `vars.example.yml`). **Change the passwords/hosts** before use.
 
 ```yaml
-aap_deployment_type: "standard"           # e.g., "standard", "controller-only"
-aap_namespace: "aap"
+# --- Registry (pull AAP images) ---
 aap_registry_url: "{{ registry_url }}"
 aap_registry_username: "{{ registry_username }}"
 aap_registry_password: "{{ registry_password }}"
-controller_route_host: "aap.example.com"  # set to your route/hostname
+
+# --- General ---
+aap_deployment_type: "standard"        # e.g., "standard", "controller-only"
+aap_namespace: "aap"                   # k8s namespace/project for AAP
+
+# --- Controller ---
+controller_admin_password: "cora0410"  # CHANGE ME
+controller_pg_host: "{{ groups['database'][0] }}"
+controller_pg_password: "pgpassword"   # CHANGE ME
+
+# --- Gateway ---
+gateway_admin_password: "gatewayadminpassword"  # CHANGE ME
+gateway_pg_host: "{{ groups['database'][0] }}"
+gateway_pg_password: "gatewaypassword"          # CHANGE ME
+
+# If using custom TLS for gateway, set cert/key paths and CA chain
+# gateway_tls_cert: "/path/to/certs/gateway.crt"
+# gateway_tls_key:  "/path/to/certs/gateway.key"
+custom_ca_cert: "add certs path here ^ example above"
+gateway_main_url: "https://<hostip>:8446"       # Set to your reachable URL:port
+
+# --- Automation Hub ---
+hub_admin_password: "hubpassword"     # CHANGE ME
+hub_pg_host: "127.0.0.1"              # Or your DB host
+hub_pg_password: "hubpgpassword"      # CHANGE ME
+
+# --- Installer-managed Postgres admin (creates component DBs) ---
+postgresql_admin_username: "postgres"
+postgresql_admin_password: "pgadminpassword"    # CHANGE ME
+
+# --- Redis ---
+redis_mode: "standalone"              # single-node demo; adjust for HA
 ```
 
 > Encrypt if storing secrets locally:
 > ```bash
 > ansible-vault encrypt vars.yml
+> ```
+>
+> **Tip (CI/CD):** Instead of committing secrets, map them from environment variables:
+> ```yaml
+> aap_registry_username: "{{ lookup('env', 'RH_REG_USER') }}"
+> aap_registry_password: "{{ lookup('env', 'RH_REG_PASS') }}"
 > ```
 
 ### 3) Install
@@ -90,6 +128,7 @@ ansible-playbook -i inventory -e @vars.yml   collections/ansible_collections/ans
 aap-containerized-deployment/
 ├─ inventory
 ├─ vars.yml
+├─ vars.example.yml
 └─ collections/
    └─ ansible_collections/
       └─ ansible/
@@ -101,15 +140,6 @@ aap-containerized-deployment/
 
 ---
 
-## CI/CD & Secrets (optional)
-
-Use environment variables in CI instead of committing passwords:
-
-```yaml
-# Example lookup usage inside vars.yml
-aap_registry_username: "{{ lookup('env', 'RH_REG_USER') }}"
-aap_registry_password: "{{ lookup('env', 'RH_REG_PASS') }}"
-```
 
 In GitHub Actions, define `RH_REG_USER` and `RH_REG_PASS` as **Repository Secrets**.
 
@@ -134,11 +164,11 @@ vars.yml
 ## Troubleshooting
 
 - **Authentication to registry fails** → Validate `registry_username`/`registry_password` and entitlement for AAP images.
-- **Hostname/route not reachable** → Confirm DNS or `/etc/hosts`, and that `controller_route_host` matches your cert/route.
+- **Hostname/route not reachable** → Confirm DNS or `/etc/hosts`, and that `gateway_main_url`/Controller route matches your certs.
 - **Ports/SELinux** → Open required ports; ensure SELinux contexts aren’t blocking container networking.
 
 ---
 
 ## License
 
-MIT (or your preferred license).# aap-containerized-deployment
+MIT (or your preferred license).
